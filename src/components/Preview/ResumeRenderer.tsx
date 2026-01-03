@@ -13,11 +13,12 @@ const getSocialIcon = (network: string) => {
 
 export const ResumeRenderer = () => {
   const { resumeData } = useResumeStore();
+  // El Router visual decide qué pintar
   if (resumeData.settings.atsMode) return <ATSLayout data={resumeData} />;
   return resumeData.settings.theme === 'classic' ? <ClassicLayout data={resumeData} /> : <ModernLayout data={resumeData} />;
 };
 
-// --- MODERN LAYOUT ---
+// --- MODERN LAYOUT (Tu diseño actual) ---
 const ModernLayout = ({ data }: { data: ResumeData }) => {
   const { basics, sections, settings } = data;
   const mainSections = sections.filter(s => s.layout === 'main');
@@ -92,12 +93,66 @@ const ClassicLayout = ({ data }: { data: ResumeData }) => {
   );
 };
 
-const ATSLayout = ({ data }: { data: ResumeData }) => <ModernLayout data={{...data, settings: {...data.settings, accentColor: '#000'}}} />;
+// --- ATS LAYOUT REAL (Nuevo diseño simplificado) ---
+const ATSLayout = ({ data }: { data: ResumeData }) => {
+    const { basics, sections } = data;
+    // En ATS no hay columnas. Todo es una lista vertical.
+    // Unimos las secciones principales y laterales en un solo flujo.
+    const allSections = [...sections.filter(s => s.layout === 'main'), ...sections.filter(s => s.layout === 'sidebar')];
 
-// Tipos para Sub-componentes
+    return (
+        <div className="font-sans text-left text-black p-0 h-full w-full bg-white">
+            {/* 1. Header Simple (Sin Foto, Sin Iconos Gráficos pesados) */}
+            <div className="mb-6 border-b-2 border-black pb-4">
+                <h1 className="text-3xl font-bold uppercase mb-2 tracking-wide">{basics.name}</h1>
+                <p className="text-lg mb-2">{basics.label}</p>
+                <div className="text-sm flex flex-wrap gap-x-4 gap-y-1 text-gray-800">
+                    {basics.email && <span>{basics.email}</span>}
+                    {basics.phone && <span>• {basics.phone}</span>}
+                    {basics.location?.city && <span>• {basics.location.city}</span>}
+                    {basics.profiles.map(p => <span key={p.network}>• {p.url}</span>)}
+                </div>
+            </div>
+
+            {/* 2. Resumen */}
+            {basics.summary && (
+                <div className="mb-6">
+                    <h3 className="font-bold uppercase text-sm mb-2 border-b border-gray-400">Perfil Profesional</h3>
+                    <p className="text-sm leading-relaxed">{basics.summary}</p>
+                </div>
+            )}
+
+            {/* 3. Secciones Lineales */}
+            {allSections.map(section => (
+                <div key={section.id} className="mb-6">
+                    <h3 className="font-bold uppercase text-sm mb-3 border-b border-gray-400">{section.title}</h3>
+                    <div className="space-y-4">
+                        {section.items.map(item => (
+                            <div key={item.id}>
+                                <div className="flex justify-between items-baseline mb-1">
+                                    <h4 className="font-bold text-base text-gray-900">{item.title}</h4>
+                                    {item.date && <span className="font-mono text-sm text-gray-600">{item.date}</span>}
+                                </div>
+                                {item.subtitle && <p className="italic text-sm mb-1">{item.subtitle}</p>}
+                                {item.description && <p className="text-sm whitespace-pre-line">{item.description}</p>}
+                                {item.tags && item.tags.length > 0 && (
+                                    <p className="text-xs mt-1 text-gray-600">
+                                        Skills: {item.tags.join(', ')}
+                                    </p>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+};
+
+// --- HELPERS ---
+
 const ContactInfo = ({ basics, color }: { basics: ResumeBasics, color: string }) => <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 text-xs text-gray-500 font-medium"><ContactItems basics={basics} color={color} /></div>;
 
-// --- CORRECCIÓN AQUÍ: Usamos getSocialIcon ---
 const ContactItems = ({ basics, color }: { basics: ResumeBasics, color?: string }) => (
     <>
         {basics.email && <span className="flex items-center gap-1"><Mail size={10} /> {basics.email}</span>}
