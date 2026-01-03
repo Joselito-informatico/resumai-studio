@@ -1,12 +1,13 @@
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import type { Control, UseFormRegister } from 'react-hook-form';
+
 import { useResumeStore } from '../../store/useResumeStore';
 import { useEffect, useRef, useState } from 'react';
 import { 
   Plus, Trash2, MapPin, Globe, Mail, Phone, User, 
   LayoutTemplate, Columns, Palette, Type, Upload, 
   ArrowUp, ArrowDown, Download, FileJson, RefreshCw,
-  ChevronDown, ChevronUp, Tag, Globe2, Award, Bold, Italic, Sparkles, BookTemplate
+  ChevronDown, ChevronUp, Tag, Globe2, Award, Bold, Italic, Sparkles, BookTemplate, Link as LinkIcon
 } from 'lucide-react';
 import type { ResumeData } from '../../types/resume';
 import { TEMPLATES } from '../../data/templates';
@@ -155,7 +156,6 @@ export const VisualEditor = () => {
                     <div className="space-y-1"><label className="label">Título</label><input {...register('basics.label')} className="input-field" /></div>
                 </div>
                 <div className="space-y-1"><label className="label">Resumen</label>
-                    {/* CORRECCIÓN: value={field.value || ''} para evitar error de controlled/uncontrolled */}
                     <Controller name="basics.summary" control={control} render={({ field }) => <RichTextarea {...field} value={field.value || ''} placeholder="Perfil profesional..." />} />
                 </div>
             </div>
@@ -274,15 +274,28 @@ const SectionEditor = ({ control, register, sectionIndex, removeSection, moveSec
             <div className="flex flex-col justify-start gap-1 pt-1 opacity-20 group-hover:opacity-100 transition-opacity"><button type="button" onClick={() => move(index, index - 1)} disabled={index === 0} className="hover:text-white"><ArrowUp size={12} /></button><button type="button" onClick={() => move(index, index + 1)} disabled={index === fields.length - 1} className="hover:text-white"><ArrowDown size={12} /></button><button type="button" onClick={() => remove(index)} className="text-red-500 hover:text-red-400 mt-1"><Trash2 size={12} /></button></div>
             <div className="flex-1 space-y-2">
                 {type === 'languages' ? (
-                   <div className="flex gap-2 items-center"><input {...register(`sections.${sectionIndex}.items.${index}.title`)} placeholder="Idioma" className="flex-1 bg-transparent border-b border-gray-800 focus:border-blue-500 text-sm font-medium text-white px-1 py-0.5 outline-none" /><select {...register(`sections.${sectionIndex}.items.${index}.subtitle`)} className="bg-gray-800 text-xs text-gray-300 border border-gray-700 rounded px-2 py-1 outline-none"><option value="Nativo">Nativo</option><option value="Avanzado">Avanzado (C1/C2)</option><option value="Intermedio">Intermedio (B1/B2)</option><option value="Básico">Básico (A1/A2)</option></select></div>
+                   <div className="space-y-1">
+                      <div className="flex gap-2 items-center"><input {...register(`sections.${sectionIndex}.items.${index}.title`)} placeholder="Idioma" className="flex-1 bg-transparent border-b border-gray-800 focus:border-blue-500 text-sm font-medium text-white px-1 py-0.5 outline-none" /><select {...register(`sections.${sectionIndex}.items.${index}.subtitle`)} className="bg-gray-800 text-xs text-gray-300 border border-gray-700 rounded px-2 py-1 outline-none"><option value="Nativo">Nativo</option><option value="Avanzado">Avanzado (C1/C2)</option><option value="Intermedio">Intermedio (B1/B2)</option><option value="Básico">Básico (A1/A2)</option></select></div>
+                      {/* NUEVO: Descripción para idioma */}
+                      <input {...register(`sections.${sectionIndex}.items.${index}.description`)} placeholder="Detalle (ej: Lectura técnica)" className="w-full bg-transparent text-xs text-gray-500 px-1 outline-none placeholder-gray-700" />
+                   </div>
                 ) : type === 'courses' ? (
-                   <div className="space-y-1"><div className="flex gap-2"><input {...register(`sections.${sectionIndex}.items.${index}.title`)} placeholder="Curso / Certificación" className="flex-1 bg-transparent border-b border-gray-800 focus:border-blue-500 text-sm font-medium text-white px-1 py-0.5 outline-none" /><input {...register(`sections.${sectionIndex}.items.${index}.date`)} placeholder="Año" className="w-16 bg-transparent border-b border-gray-800 focus:border-blue-500 text-xs text-right text-gray-400 px-1 py-0.5 outline-none font-mono" /></div><input {...register(`sections.${sectionIndex}.items.${index}.subtitle`)} placeholder="Entidad Emisora" className="w-full bg-transparent text-xs text-blue-400 px-1 outline-none" /></div>
+                   <div className="space-y-1">
+                       <div className="flex gap-2"><input {...register(`sections.${sectionIndex}.items.${index}.title`)} placeholder="Curso / Certificación" className="flex-1 bg-transparent border-b border-gray-800 focus:border-blue-500 text-sm font-medium text-white px-1 py-0.5 outline-none" /><input {...register(`sections.${sectionIndex}.items.${index}.date`)} placeholder="Año" className="w-16 bg-transparent border-b border-gray-800 focus:border-blue-500 text-xs text-right text-gray-400 px-1 py-0.5 outline-none font-mono" /></div>
+                       {/* NUEVO: Campo URL para el certificado */}
+                       <div className="flex gap-2 items-center"><input {...register(`sections.${sectionIndex}.items.${index}.subtitle`)} placeholder="Entidad Emisora" className="flex-1 bg-transparent text-xs text-blue-400 px-1 outline-none" /><LinkIcon size={10} className="text-gray-600"/><input {...register(`sections.${sectionIndex}.items.${index}.url`)} placeholder="https://..." className="w-1/3 bg-transparent text-xs text-gray-500 outline-none" /></div>
+                       {/* NUEVO: Descripción para el curso */}
+                       <Controller name={`sections.${sectionIndex}.items.${index}.description`} control={control} render={({ field }) => <RichTextarea {...field} value={field.value || ''} placeholder="Detalles del curso..." rows={2} />} />
+                   </div>
                 ) : (
                    <>
                        <div className="flex gap-2"><input {...register(`sections.${sectionIndex}.items.${index}.title`)} placeholder="Título Principal" className="w-full bg-transparent border-b border-gray-800 focus:border-blue-500 text-sm font-medium text-white px-1 py-0.5 outline-none" /><input {...register(`sections.${sectionIndex}.items.${index}.date`)} placeholder="Fecha" className="w-1/3 bg-transparent border-b border-gray-800 focus:border-blue-500 text-xs text-right text-gray-400 px-1 py-0.5 outline-none font-mono" /></div>
-                       <input {...register(`sections.${sectionIndex}.items.${index}.subtitle`)} placeholder="Subtítulo" className="w-full bg-transparent text-xs text-blue-400 px-1 outline-none placeholder-gray-600" />
+                       <div className="flex gap-2 items-center">
+                           <input {...register(`sections.${sectionIndex}.items.${index}.subtitle`)} placeholder="Subtítulo / Empresa" className="flex-1 bg-transparent text-xs text-blue-400 px-1 outline-none placeholder-gray-600" />
+                           {/* NUEVO: Campo URL para el proyecto */}
+                           <LinkIcon size={10} className="text-gray-600"/><input {...register(`sections.${sectionIndex}.items.${index}.url`)} placeholder="Link Proyecto..." className="w-1/3 bg-transparent text-xs text-gray-500 outline-none" />
+                       </div>
                        <Controller control={control} name={`sections.${sectionIndex}.items.${index}.tags`} render={({ field }) => ( <div className="flex items-center gap-2 bg-gray-800/50 rounded px-2 py-1 border border-transparent focus-within:border-gray-600"><Tag size={12} className="text-gray-500" /><input className="w-full bg-transparent text-xs text-gray-300 outline-none placeholder-gray-600" placeholder="Tags..." defaultValue={field.value?.join(", ")} onBlur={(e) => field.onChange(e.target.value ? e.target.value.split(',').map(s => s.trim()).filter(Boolean) : [])} /></div> )} />
-                       {/* CORRECCIÓN: Asegurar value string */}
                        <Controller name={`sections.${sectionIndex}.items.${index}.description`} control={control} render={({ field }) => <RichTextarea {...field} value={field.value || ''} placeholder="Descripción..." />} />
                    </>
                 )}

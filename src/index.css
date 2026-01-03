@@ -23,63 +23,58 @@ body {
   @apply bg-gray-700 rounded;
 }
 
-/* --- ESTILOS DE IMPRESIÓN (CORREGIDO) --- */
+/* --- ESTILOS DE IMPRESIÓN --- */
 @media print {
-  /* Configuración de la página del navegador */
   @page {
-    margin: 0; 
+    margin: 12mm; 
+    padding: 12mm !important;
     size: auto; 
   }
 
-  body {
+  html, body {
     background: white;
-    /* Permitir scroll si es necesario para que el contenido fluya */
-    overflow: visible !important;
     height: auto !important;
+    overflow: visible !important;
   }
 
-  /* IMPORTANTE: Eliminamos 'visibility: hidden' en 'body *'.
-     Confiamos en que MainLayout.tsx usa 'print:hidden' para sacar el editor del DOM.
-     Esto evita que el editor ocupe espacio "fantasma" a la izquierda.
-  */
-
-  /* Resetear el contenedor del Zoom */
   #print-area {
-    position: absolute;
-    transform: none !important;
-    top: 0;
-    left: 0;
-    width: 100%;
-    /* Anular cualquier transformación de escala (Zoom) */
+    position: relative !important;
+    width: 100% !important;
+    height: auto !important;
+    top: auto !important;
+    left: auto !important;
     transform: none !important; 
     margin: 0 !important;
     padding: 0 !important;
+    display: block !important;
   }
 
-  /* Configuración del Papel */
   #resume-paper {
-    /* Forzar ancho completo del área de impresión */
     width: 100% !important;
-    
-    /* RESTAURAR MÁRGENES: */
-    /* Usamos 12mm de padding interno para que el texto no toque los bordes */
-    padding: 12mm !important; 
-    
-    /* Eliminar sombras y bordes de la vista previa */
+    padding: 0 !important;
+    margin: 0 !important;
     box-shadow: none !important;
     border: none !important;
-    
-    /* Asegurar que el padding no rompa el ancho total */
-    box-sizing: border-box !important; 
-    
-    /* Asegurar que el fondo sea blanco */
     background: white !important;
     min-height: 100vh;
   }
 
-  /* Asegurar impresión de colores de fondo (tags, barras, etc.) */
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+  }
+
+  /* --- NUEVAS REGLAS ANTI-RUPTURA DE PÁGINA --- */
+  
+  /* Evita que un elemento (como un trabajo o proyecto) se parta por la mitad */
+  .break-inside-avoid {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  
+  /* Evita que se rompa la página justo después de este elemento (para títulos) */
+  .break-after-avoid {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
   }
 }

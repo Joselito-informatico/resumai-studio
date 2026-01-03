@@ -1,4 +1,4 @@
-import { Github, Linkedin, Twitter, Globe, Mail, Phone, MapPin } from 'lucide-react';
+import { Github, Linkedin, Twitter, Globe, Mail, Phone, MapPin, ExternalLink } from 'lucide-react';
 import { useResumeStore } from '../../store/useResumeStore';
 import type { ResumeSection, ResumeData, ResumeBasics, ResumeSettings } from '../../types/resume';
 import { MarkdownRenderer } from '../../utils/markdown';
@@ -13,12 +13,11 @@ const getSocialIcon = (network: string) => {
 
 export const ResumeRenderer = () => {
   const { resumeData } = useResumeStore();
-  // El Router visual decide qué pintar
   if (resumeData.settings.atsMode) return <ATSLayout data={resumeData} />;
   return resumeData.settings.theme === 'classic' ? <ClassicLayout data={resumeData} /> : <ModernLayout data={resumeData} />;
 };
 
-// --- MODERN LAYOUT (Tu diseño actual) ---
+// --- MODERN LAYOUT ---
 const ModernLayout = ({ data }: { data: ResumeData }) => {
   const { basics, sections, settings } = data;
   const mainSections = sections.filter(s => s.layout === 'main');
@@ -67,19 +66,28 @@ const ClassicLayout = ({ data }: { data: ResumeData }) => {
       <div className="space-y-6">
         {allSections.map(s => (
           <div key={s.id} className={`${density.margin}`}>
-            <h3 className="text-center font-bold uppercase tracking-widest border-b border-gray-300 mb-4 pb-1 text-sm text-gray-800">{s.title}</h3>
+            {/* Título con break-after-avoid para no quedar huérfano */}
+            <h3 className="text-center font-bold uppercase tracking-widest border-b border-gray-300 mb-4 pb-1 text-sm text-gray-800 break-after-avoid">{s.title}</h3>
             {s.type === 'languages' ? (
                 <div className="flex flex-wrap justify-center gap-6">
                     {s.items.map((item) => (
-                        <div key={item.id} className="text-center"><span className="font-bold">{item.title}</span> <span className="text-gray-500 italic">({item.subtitle})</span></div>
+                        <div key={item.id} className="text-center break-inside-avoid">
+                            <span className="font-bold">{item.title}</span> 
+                            <span className="text-gray-500 italic"> ({item.subtitle})</span>
+                            {item.description && <div className="text-xs text-gray-400">{item.description}</div>}
+                        </div>
                     ))}
                 </div>
             ) : (
                 <div className="space-y-4">{s.items.map((item) => (
-                    <div key={item.id} className="grid grid-cols-12 gap-4">
+                    // Ítem con break-inside-avoid para no partirse
+                    <div key={item.id} className="grid grid-cols-12 gap-4 break-inside-avoid">
                         <div className="col-span-2 text-right text-gray-500 font-medium text-xs pt-0.5">{item.date}</div>
                         <div className="col-span-10">
-                            <h4 className="font-bold text-gray-900 text-base">{item.title}</h4>
+                            <h4 className="font-bold text-gray-900 text-base flex items-center gap-2">
+                                {item.title}
+                                {item.url && <a href={item.url} target="_blank" rel="noreferrer" className="text-blue-600 hover:text-blue-800"><ExternalLink size={12}/></a>}
+                            </h4>
                             {item.subtitle && <p className="text-gray-700 italic mb-1">{item.subtitle}</p>}
                             {item.description && <MarkdownRenderer className="text-gray-600 leading-relaxed whitespace-pre-line text-justify">{item.description}</MarkdownRenderer>}
                         </div>
@@ -93,16 +101,13 @@ const ClassicLayout = ({ data }: { data: ResumeData }) => {
   );
 };
 
-// --- ATS LAYOUT REAL (Nuevo diseño simplificado) ---
+// --- ATS LAYOUT REAL ---
 const ATSLayout = ({ data }: { data: ResumeData }) => {
     const { basics, sections } = data;
-    // En ATS no hay columnas. Todo es una lista vertical.
-    // Unimos las secciones principales y laterales en un solo flujo.
     const allSections = [...sections.filter(s => s.layout === 'main'), ...sections.filter(s => s.layout === 'sidebar')];
 
     return (
         <div className="font-sans text-left text-black p-0 h-full w-full bg-white">
-            {/* 1. Header Simple (Sin Foto, Sin Iconos Gráficos pesados) */}
             <div className="mb-6 border-b-2 border-black pb-4">
                 <h1 className="text-3xl font-bold uppercase mb-2 tracking-wide">{basics.name}</h1>
                 <p className="text-lg mb-2">{basics.label}</p>
@@ -114,31 +119,30 @@ const ATSLayout = ({ data }: { data: ResumeData }) => {
                 </div>
             </div>
 
-            {/* 2. Resumen */}
             {basics.summary && (
-                <div className="mb-6">
-                    <h3 className="font-bold uppercase text-sm mb-2 border-b border-gray-400">Perfil Profesional</h3>
+                <div className="mb-6 break-inside-avoid">
+                    <h3 className="font-bold uppercase text-sm mb-2 border-b border-gray-400 break-after-avoid">Perfil Profesional</h3>
                     <p className="text-sm leading-relaxed">{basics.summary}</p>
                 </div>
             )}
 
-            {/* 3. Secciones Lineales */}
             {allSections.map(section => (
                 <div key={section.id} className="mb-6">
-                    <h3 className="font-bold uppercase text-sm mb-3 border-b border-gray-400">{section.title}</h3>
+                    <h3 className="font-bold uppercase text-sm mb-3 border-b border-gray-400 break-after-avoid">{section.title}</h3>
                     <div className="space-y-4">
                         {section.items.map(item => (
-                            <div key={item.id}>
+                            <div key={item.id} className="break-inside-avoid">
                                 <div className="flex justify-between items-baseline mb-1">
-                                    <h4 className="font-bold text-base text-gray-900">{item.title}</h4>
+                                    <h4 className="font-bold text-base text-gray-900">
+                                        {item.title} 
+                                        {item.url && <span className="text-xs font-normal text-gray-600 ml-1">[{item.url}]</span>}
+                                    </h4>
                                     {item.date && <span className="font-mono text-sm text-gray-600">{item.date}</span>}
                                 </div>
                                 {item.subtitle && <p className="italic text-sm mb-1">{item.subtitle}</p>}
                                 {item.description && <p className="text-sm whitespace-pre-line">{item.description}</p>}
                                 {item.tags && item.tags.length > 0 && (
-                                    <p className="text-xs mt-1 text-gray-600">
-                                        Skills: {item.tags.join(', ')}
-                                    </p>
+                                    <p className="text-xs mt-1 text-gray-600">Skills: {item.tags.join(', ')}</p>
                                 )}
                             </div>
                         ))}
@@ -179,22 +183,30 @@ const LevelDots = ({ level, color }: { level: string, color: string }) => {
 
 const SectionRenderer = ({ section, settings }: { section: ResumeSection, settings: ResumeSettings }) => (
   <div className="mb-6 last:mb-0">
-    <h3 className="font-bold uppercase tracking-widest border-b-2 mb-3 text-xs flex items-center gap-2 pb-1" style={{ color: settings.accentColor, borderColor: settings.accentColor }}>{section.title}</h3>
+    {/* Título con protección anti-huérfano */}
+    <h3 className="font-bold uppercase tracking-widest border-b-2 mb-3 text-xs flex items-center gap-2 pb-1 break-after-avoid" style={{ color: settings.accentColor, borderColor: settings.accentColor }}>{section.title}</h3>
     <div className="space-y-3">
       {section.items.map((item) => (
-        <div key={item.id}>
+        // Wrapper indivisible del ítem
+        <div key={item.id} className="break-inside-avoid">
           {section.type === 'languages' ? (
-              <div className="flex justify-between items-center mb-1">
-                  <span className="font-bold text-gray-800 text-sm">{item.title}</span>
-                  <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-500 mr-1">{item.subtitle}</span>
-                      <LevelDots level={item.subtitle || ''} color={settings.accentColor} />
+              <div className="mb-2">
+                  <div className="flex justify-between items-center mb-0.5">
+                      <span className="font-bold text-gray-800 text-sm">{item.title}</span>
+                      <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-500 mr-1">{item.subtitle}</span>
+                          <LevelDots level={item.subtitle || ''} color={settings.accentColor} />
+                      </div>
                   </div>
+                  {item.description && <div className="text-xs text-gray-500 italic leading-tight">{item.description}</div>}
               </div>
           ) : (
             <>
               <div className="flex justify-between items-baseline mb-1">
-                <h4 className="font-bold text-gray-900">{item.title}</h4>
+                <h4 className="font-bold text-gray-900 flex items-center gap-2">
+                    {item.title}
+                    {item.url && <a href={item.url} target="_blank" rel="noreferrer" className="text-gray-400 hover:text-blue-600 transition-colors"><ExternalLink size={12}/></a>}
+                </h4>
                 {item.date && <span className="text-xs text-gray-500 font-mono ml-2">{item.date}</span>}
               </div>
               {item.subtitle && <p className="font-medium text-xs mb-1" style={{ color: settings.accentColor }}>{item.subtitle}</p>}

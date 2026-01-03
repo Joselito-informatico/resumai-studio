@@ -26,9 +26,9 @@ export type ResumeSectionItem = {
   date?: string;
   description?: string;
   tags?: string[];
+  url?: string;
 };
 
-// CORRECCIÓN: Añadidos 'languages' y 'courses'
 export type ResumeSection = {
   id: string;
   title: string;
