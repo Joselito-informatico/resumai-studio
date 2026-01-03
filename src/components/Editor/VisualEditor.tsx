@@ -8,12 +8,12 @@ import {
   ArrowUp, ArrowDown, Download, FileJson, RefreshCw,
   ChevronDown, ChevronUp, Tag, Globe2, Award, Bold, Italic, Sparkles, BookTemplate
 } from 'lucide-react';
-import type { ResumeData } from '../../types/resume'; // Importamos el tipo correcto
+import type { ResumeData } from '../../types/resume';
 import { TEMPLATES } from '../../data/templates';
 
 const ACCENT_COLORS = ['#2563eb', '#059669', '#dc2626', '#7c3aed', '#db2777', '#d97706', '#111827'];
 
-// --- TIPADO STRICTO PARA PROPS ---
+// --- TIPADO PARA PROPS ---
 interface RichTextareaProps {
     value: string;
     onChange: (value: string) => void;
@@ -52,10 +52,8 @@ export const VisualEditor = () => {
   const { register, control, watch, setValue, reset } = useForm<ResumeData>({ defaultValues: resumeData, mode: 'onChange' });
   const { fields: sectionFields, append: appendSection, remove: removeSection, move: moveSection } = useFieldArray({ control, name: "sections" });
 
-  // Sincronización optimizada con Debounce
   useEffect(() => {
     const subscription = watch((value) => { 
-        // Pequeño debounce para no saturar el renderizado del preview
         const timeout = setTimeout(() => {
             if (value) setResumeData(value as ResumeData); 
         }, 300);
@@ -95,12 +93,9 @@ export const VisualEditor = () => {
     link.click();
   };
 
-  // Reset optimizado usando el store
   const handleReset = () => { 
       if (confirm("¿Borrar todo?")) { 
-          resetResume(); // Limpia el store
-          // Necesitamos resetear el formulario local también para que refleje el cambio visualmente
-          // Un pequeño timeout asegura que el store se actualice primero
+          resetResume();
           setTimeout(() => reset(useResumeStore.getState().resumeData), 50);
       } 
   };
@@ -126,7 +121,6 @@ export const VisualEditor = () => {
 
   return (
     <div className="h-full overflow-y-auto p-6 bg-gray-900 text-gray-300 space-y-6 pb-32 scroll-smooth">
-      {/* PANEL DE DISEÑO */}
       <section className="bg-gray-800/40 p-4 rounded-xl border border-gray-700 space-y-4">
         <h2 className="flex items-center gap-2 text-sm font-bold text-gray-400 uppercase tracking-wider border-b border-gray-700 pb-2"><Palette size={16} className="text-pink-500" /> Diseño Global</h2>
         <div className="grid grid-cols-2 gap-4">
@@ -149,7 +143,6 @@ export const VisualEditor = () => {
         </div>
       </section>
 
-      {/* DATOS PERSONALES */}
       <CollapsibleSection title="Datos Personales" icon={<User size={18} className="text-blue-500" />} defaultOpen={true}>
         <div className="flex flex-col md:flex-row gap-6">
             <div className="flex flex-col items-center gap-2 pt-2">
@@ -176,7 +169,6 @@ export const VisualEditor = () => {
         </div>
       </CollapsibleSection>
 
-      {/* SECCIONES DINÁMICAS */}
       <div className="space-y-4">
         <div className="flex items-center justify-between pb-2 border-b border-gray-800 relative">
             <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Bloques</h3>
@@ -196,7 +188,6 @@ export const VisualEditor = () => {
         {sectionFields.map((section, index) => <SectionEditor key={section.id} control={control} register={register} sectionIndex={index} removeSection={() => removeSection(index)} moveSection={moveSection} isFirst={index === 0} isLast={index === sectionFields.length - 1} type={section.type} />)}
       </div>
 
-      {/* --- TOOLBAR INFERIOR --- */}
       <div className="fixed bottom-0 left-0 w-full md:w-1/2 bg-gray-900/95 backdrop-blur border-t border-gray-800 p-3 flex items-center justify-between z-50">
          <div className="flex items-center gap-2">
              <div className="relative">
