@@ -14,7 +14,7 @@ const INITIAL_DATA: ResumeData = {
   basics: {
     name: "Alex Dev",
     label: "Senior Frontend Architect",
-    image: "", // <--- Inicializado vacío
+    image: "", 
     email: "alex@resumai.dev",
     phone: "+56 9 1234 5678",
     website: "https://resumai.dev",
@@ -82,6 +82,7 @@ interface ResumeState {
   resumeData: ResumeData;
   setResumeData: (data: ResumeData) => void;
   updateSettings: (settings: Partial<ResumeSettings>) => void;
+  resetResume: () => void; // <--- Nueva acción
 }
 
 export const useResumeStore = create<ResumeState>()(
@@ -95,6 +96,7 @@ export const useResumeStore = create<ResumeState>()(
           settings: { ...state.resumeData.settings, ...newSettings }
         }
       })),
+      resetResume: () => set({ resumeData: INITIAL_DATA }), // <--- Implementación limpia
     }),
     {
       name: 'resumai-storage',

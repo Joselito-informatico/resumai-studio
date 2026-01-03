@@ -1,7 +1,7 @@
 import { Github, Linkedin, Twitter, Globe, Mail, Phone, MapPin } from 'lucide-react';
 import { useResumeStore } from '../../store/useResumeStore';
-import type { ResumeSection, ResumeData } from '../../types/resume';
-import { MarkdownRenderer } from '../../utils/markdown'; // <--- IMPORTAR
+import type { ResumeSection, ResumeData, ResumeBasics, ResumeSettings } from '../../types/resume';
+import { MarkdownRenderer } from '../../utils/markdown';
 
 const getSocialIcon = (network: string) => {
   const n = network.toLowerCase();
@@ -69,12 +69,12 @@ const ClassicLayout = ({ data }: { data: ResumeData }) => {
             <h3 className="text-center font-bold uppercase tracking-widest border-b border-gray-300 mb-4 pb-1 text-sm text-gray-800">{s.title}</h3>
             {s.type === 'languages' ? (
                 <div className="flex flex-wrap justify-center gap-6">
-                    {s.items.map((item: any) => (
+                    {s.items.map((item) => (
                         <div key={item.id} className="text-center"><span className="font-bold">{item.title}</span> <span className="text-gray-500 italic">({item.subtitle})</span></div>
                     ))}
                 </div>
             ) : (
-                <div className="space-y-4">{s.items.map((item: any) => (
+                <div className="space-y-4">{s.items.map((item) => (
                     <div key={item.id} className="grid grid-cols-12 gap-4">
                         <div className="col-span-2 text-right text-gray-500 font-medium text-xs pt-0.5">{item.date}</div>
                         <div className="col-span-10">
@@ -94,13 +94,14 @@ const ClassicLayout = ({ data }: { data: ResumeData }) => {
 
 const ATSLayout = ({ data }: { data: ResumeData }) => <ModernLayout data={{...data, settings: {...data.settings, accentColor: '#000'}}} />;
 
-const ContactInfo = ({ basics, color }: any) => <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 text-xs text-gray-500 font-medium"><ContactItems basics={basics} color={color} /></div>;
-const ContactItems = ({ basics, color }: any) => (
+// Tipos para Sub-componentes
+const ContactInfo = ({ basics, color }: { basics: ResumeBasics, color: string }) => <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 text-xs text-gray-500 font-medium"><ContactItems basics={basics} color={color} /></div>;
+const ContactItems = ({ basics, color }: { basics: ResumeBasics, color?: string }) => (
     <>
         {basics.email && <span className="flex items-center gap-1">{basics.email}</span>}
         {basics.phone && <span>| {basics.phone}</span>}
         {basics.location?.city && <span>| {basics.location.city}, {basics.location.country}</span>}
-        {basics.profiles.map((profile: any, idx: number) => <a key={idx} href={profile.url} target="_blank" rel="noreferrer" style={{ color }} className="flex items-center gap-1 hover:underline">| {profile.network}</a>)}
+        {basics.profiles.map((profile, idx) => <a key={idx} href={profile.url} target="_blank" rel="noreferrer" style={{ color }} className="flex items-center gap-1 hover:underline">| {profile.network}</a>)}
     </>
 );
 
@@ -115,11 +116,11 @@ const LevelDots = ({ level, color }: { level: string, color: string }) => {
     );
 };
 
-const SectionRenderer = ({ section, settings }: any) => (
+const SectionRenderer = ({ section, settings }: { section: ResumeSection, settings: ResumeSettings }) => (
   <div className="mb-6 last:mb-0">
     <h3 className="font-bold uppercase tracking-widest border-b-2 mb-3 text-xs flex items-center gap-2 pb-1" style={{ color: settings.accentColor, borderColor: settings.accentColor }}>{section.title}</h3>
     <div className="space-y-3">
-      {section.items.map((item: any) => (
+      {section.items.map((item) => (
         <div key={item.id}>
           {section.type === 'languages' ? (
               <div className="flex justify-between items-center mb-1">

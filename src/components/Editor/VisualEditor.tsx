@@ -1,4 +1,5 @@
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
+import type { Control, UseFormRegister } from 'react-hook-form';
 import { useResumeStore } from '../../store/useResumeStore';
 import { useEffect, useRef, useState } from 'react';
 import { 
@@ -7,17 +8,26 @@ import {
   ArrowUp, ArrowDown, Download, FileJson, RefreshCw,
   ChevronDown, ChevronUp, Tag, Globe2, Award, Bold, Italic, Sparkles, BookTemplate
 } from 'lucide-react';
-import type { ResumeData } from '../../types/resume';
-import { TEMPLATES } from '../../data/templates'; // <--- IMPORTAR DATOS
+import type { ResumeData } from '../../types/resume'; // Importamos el tipo correcto
+import { TEMPLATES } from '../../data/templates';
 
 const ACCENT_COLORS = ['#2563eb', '#059669', '#dc2626', '#7c3aed', '#db2777', '#d97706', '#111827'];
 
+// --- TIPADO STRICTO PARA PROPS ---
+interface RichTextareaProps {
+    value: string;
+    onChange: (value: string) => void;
+    placeholder?: string;
+    rows?: number;
+}
+
 // Rich Textarea Component
-const RichTextarea = ({ value, onChange, placeholder, rows = 3 }: any) => {
+const RichTextarea = ({ value, onChange, placeholder, rows = 3 }: RichTextareaProps) => {
     const insertFormat = (format: string) => {
-        if (format === 'AI') onChange((value || '') + " Lideré iniciativas estratégicas resultando en un incremento del 20% en eficiencia operativa.");
-        else if (format === 'bold') onChange((value || '') + " **texto destacado** ");
-        else if (format === 'italic') onChange((value || '') + " *texto itálico* ");
+        const text = value || '';
+        if (format === 'AI') onChange(text + " Lideré iniciativas estratégicas resultando en un incremento del 20% en eficiencia operativa.");
+        else if (format === 'bold') onChange(text + " **texto destacado** ");
+        else if (format === 'italic') onChange(text + " *texto itálico* ");
     };
     return (
         <div className="relative group">
@@ -33,21 +43,27 @@ const RichTextarea = ({ value, onChange, placeholder, rows = 3 }: any) => {
 };
 
 export const VisualEditor = () => {
-  const { resumeData, setResumeData } = useResumeStore();
+  const { resumeData, setResumeData, resetResume } = useResumeStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const jsonInputRef = useRef<HTMLInputElement>(null);
   const [showSectionMenu, setShowSectionMenu] = useState(false);
-  const [showTemplateMenu, setShowTemplateMenu] = useState(false); // <--- ESTADO MENU PLANTILLAS
+  const [showTemplateMenu, setShowTemplateMenu] = useState(false);
 
   const { register, control, watch, setValue, reset } = useForm<ResumeData>({ defaultValues: resumeData, mode: 'onChange' });
   const { fields: sectionFields, append: appendSection, remove: removeSection, move: moveSection } = useFieldArray({ control, name: "sections" });
 
+  // Sincronización optimizada con Debounce
   useEffect(() => {
-    const subscription = watch((value) => { if (value) setResumeData(value as ResumeData); });
+    const subscription = watch((value) => { 
+        // Pequeño debounce para no saturar el renderizado del preview
+        const timeout = setTimeout(() => {
+            if (value) setResumeData(value as ResumeData); 
+        }, 300);
+        return () => clearTimeout(timeout);
+    });
     return () => subscription.unsubscribe();
   }, [watch, setResumeData]);
 
-  // Handler para cargar plantilla
   const loadTemplate = (key: string) => {
     if(confirm("Esto reemplazará tu contenido actual. ¿Continuar?")) {
         const template = TEMPLATES[key];
@@ -79,7 +95,16 @@ export const VisualEditor = () => {
     link.click();
   };
 
-  const handleReset = () => { if (confirm("¿Borrar todo?")) { localStorage.removeItem('resumai-storage'); window.location.reload(); } };
+  // Reset optimizado usando el store
+  const handleReset = () => { 
+      if (confirm("¿Borrar todo?")) { 
+          resetResume(); // Limpia el store
+          // Necesitamos resetear el formulario local también para que refleje el cambio visualmente
+          // Un pequeño timeout asegura que el store se actualice primero
+          setTimeout(() => reset(useResumeStore.getState().resumeData), 50);
+      } 
+  };
+  
   const handleColorChange = (c: string) => setValue('settings.accentColor', c);
   const handleFontChange = (f: 'sans' | 'serif' | 'mono') => setValue('settings.font', f);
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -171,11 +196,9 @@ export const VisualEditor = () => {
         {sectionFields.map((section, index) => <SectionEditor key={section.id} control={control} register={register} sectionIndex={index} removeSection={() => removeSection(index)} moveSection={moveSection} isFirst={index === 0} isLast={index === sectionFields.length - 1} type={section.type} />)}
       </div>
 
-      {/* --- TOOLBAR INFERIOR (Con Plantillas) --- */}
+      {/* --- TOOLBAR INFERIOR --- */}
       <div className="fixed bottom-0 left-0 w-full md:w-1/2 bg-gray-900/95 backdrop-blur border-t border-gray-800 p-3 flex items-center justify-between z-50">
          <div className="flex items-center gap-2">
-             
-             {/* MENU PLANTILLAS */}
              <div className="relative">
                  <button onClick={() => setShowTemplateMenu(!showTemplateMenu)} className="btn-secondary text-purple-300 border-purple-900/50 hover:bg-purple-900/20" title="Cargar ejemplo">
                     <BookTemplate size={14} /> <span className="hidden sm:inline">Plantillas</span>
@@ -189,9 +212,7 @@ export const VisualEditor = () => {
                  )}
                  {showTemplateMenu && <div className="fixed inset-0 z-40" onClick={() => setShowTemplateMenu(false)} />}
              </div>
-
              <div className="h-4 w-px bg-gray-700 mx-1"></div>
-
              <button onClick={handleExportJson} className="btn-secondary" title="Guardar"><Download size={14} /></button>
              <div className="relative"><button onClick={() => jsonInputRef.current?.click()} className="btn-secondary" title="Cargar"><FileJson size={14} /></button><input type="file" ref={jsonInputRef} onChange={handleImportJson} accept=".json" className="hidden" /></div>
          </div>
@@ -211,7 +232,9 @@ export const VisualEditor = () => {
   );
 };
 
-const CollapsibleSection = ({ title, icon, children, defaultOpen = false }: any) => {
+// --- SUBCOMPONENTES TIPADOS ---
+interface CollapsibleProps { title: string; icon: React.ReactNode; children: React.ReactNode; defaultOpen?: boolean; }
+const CollapsibleSection = ({ title, icon, children, defaultOpen = false }: CollapsibleProps) => {
     const [isOpen, setIsOpen] = useState(defaultOpen);
     return (
         <section className="bg-gray-800/20 border border-gray-800 rounded-lg overflow-hidden transition-all hover:border-gray-700">
@@ -224,7 +247,18 @@ const CollapsibleSection = ({ title, icon, children, defaultOpen = false }: any)
     );
 };
 
-const SectionEditor = ({ control, register, sectionIndex, removeSection, moveSection, isFirst, isLast, type }: any) => {
+interface SectionEditorProps {
+    control: Control<ResumeData>;
+    register: UseFormRegister<ResumeData>;
+    sectionIndex: number;
+    removeSection: () => void;
+    moveSection: (from: number, to: number) => void;
+    isFirst: boolean;
+    isLast: boolean;
+    type: string;
+}
+
+const SectionEditor = ({ control, register, sectionIndex, removeSection, moveSection, isFirst, isLast, type }: SectionEditorProps) => {
   const [isOpen, setIsOpen] = useState(true);
   const { fields, append, remove, move } = useFieldArray({ control, name: `sections.${sectionIndex}.items` });
   const getIcon = () => { if (type === 'languages') return <Globe2 size={16} className="text-green-400" />; if (type === 'courses') return <Award size={16} className="text-yellow-400" />; return <LayoutTemplate size={16} className="text-purple-400" />; };
