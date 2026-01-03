@@ -8,7 +8,7 @@ export type ResumeBasics = {
   name: string;
   label: string;
   email: string;
-  image?: string; // <--- NUEVO CAMPO (Base64 string)
+  image?: string;
   phone: string;
   website?: string;
   summary: string;
@@ -28,10 +28,11 @@ export type ResumeSectionItem = {
   tags?: string[];
 };
 
+// CORRECCIÓN: Añadidos 'languages' y 'courses'
 export type ResumeSection = {
   id: string;
   title: string;
-  type: 'experience' | 'education' | 'projects' | 'skills' | 'custom';
+  type: 'experience' | 'education' | 'projects' | 'skills' | 'custom' | 'languages' | 'courses';
   layout: 'main' | 'sidebar';
   items: ResumeSectionItem[];
 };

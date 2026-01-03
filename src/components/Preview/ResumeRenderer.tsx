@@ -1,15 +1,7 @@
-import { Github, Linkedin, Twitter, Globe, Mail, Phone, MapPin } from 'lucide-react';
+import { Github, Linkedin, Twitter, Globe } from 'lucide-react';
 import { useResumeStore } from '../../store/useResumeStore';
 import type { ResumeSection, ResumeData, ResumeBasics, ResumeSettings } from '../../types/resume';
 import { MarkdownRenderer } from '../../utils/markdown';
-
-const getSocialIcon = (network: string) => {
-  const n = network.toLowerCase();
-  if (n.includes('github')) return <Github size={10} />;
-  if (n.includes('linkedin')) return <Linkedin size={10} />;
-  if (n.includes('twitter') || n.includes('x')) return <Twitter size={10} />;
-  return <Globe size={10} />;
-};
 
 export const ResumeRenderer = () => {
   const { resumeData } = useResumeStore();
@@ -17,7 +9,6 @@ export const ResumeRenderer = () => {
   return resumeData.settings.theme === 'classic' ? <ClassicLayout data={resumeData} /> : <ModernLayout data={resumeData} />;
 };
 
-// --- MODERN LAYOUT ---
 const ModernLayout = ({ data }: { data: ResumeData }) => {
   const { basics, sections, settings } = data;
   const mainSections = sections.filter(s => s.layout === 'main');
@@ -48,7 +39,6 @@ const ModernLayout = ({ data }: { data: ResumeData }) => {
   );
 };
 
-// --- CLASSIC LAYOUT ---
 const ClassicLayout = ({ data }: { data: ResumeData }) => {
   const { basics, sections, settings } = data;
   const allSections = [...sections.filter(s => s.layout === 'main'), ...sections.filter(s => s.layout === 'sidebar')];
@@ -94,7 +84,6 @@ const ClassicLayout = ({ data }: { data: ResumeData }) => {
 
 const ATSLayout = ({ data }: { data: ResumeData }) => <ModernLayout data={{...data, settings: {...data.settings, accentColor: '#000'}}} />;
 
-// Tipos para Sub-componentes
 const ContactInfo = ({ basics, color }: { basics: ResumeBasics, color: string }) => <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 text-xs text-gray-500 font-medium"><ContactItems basics={basics} color={color} /></div>;
 const ContactItems = ({ basics, color }: { basics: ResumeBasics, color?: string }) => (
     <>

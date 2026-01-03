@@ -13,7 +13,6 @@ import { TEMPLATES } from '../../data/templates';
 
 const ACCENT_COLORS = ['#2563eb', '#059669', '#dc2626', '#7c3aed', '#db2777', '#d97706', '#111827'];
 
-// --- TIPADO PARA PROPS ---
 interface RichTextareaProps {
     value: string;
     onChange: (value: string) => void;
@@ -21,7 +20,6 @@ interface RichTextareaProps {
     rows?: number;
 }
 
-// Rich Textarea Component
 const RichTextarea = ({ value, onChange, placeholder, rows = 3 }: RichTextareaProps) => {
     const insertFormat = (format: string) => {
         const text = value || '';
@@ -157,7 +155,8 @@ export const VisualEditor = () => {
                     <div className="space-y-1"><label className="label">Título</label><input {...register('basics.label')} className="input-field" /></div>
                 </div>
                 <div className="space-y-1"><label className="label">Resumen</label>
-                    <Controller name="basics.summary" control={control} render={({ field }) => <RichTextarea {...field} placeholder="Perfil profesional..." />} />
+                    {/* CORRECCIÓN: value={field.value || ''} para evitar error de controlled/uncontrolled */}
+                    <Controller name="basics.summary" control={control} render={({ field }) => <RichTextarea {...field} value={field.value || ''} placeholder="Perfil profesional..." />} />
                 </div>
             </div>
         </div>
@@ -223,7 +222,6 @@ export const VisualEditor = () => {
   );
 };
 
-// --- SUBCOMPONENTES TIPADOS ---
 interface CollapsibleProps { title: string; icon: React.ReactNode; children: React.ReactNode; defaultOpen?: boolean; }
 const CollapsibleSection = ({ title, icon, children, defaultOpen = false }: CollapsibleProps) => {
     const [isOpen, setIsOpen] = useState(defaultOpen);
@@ -284,7 +282,8 @@ const SectionEditor = ({ control, register, sectionIndex, removeSection, moveSec
                        <div className="flex gap-2"><input {...register(`sections.${sectionIndex}.items.${index}.title`)} placeholder="Título Principal" className="w-full bg-transparent border-b border-gray-800 focus:border-blue-500 text-sm font-medium text-white px-1 py-0.5 outline-none" /><input {...register(`sections.${sectionIndex}.items.${index}.date`)} placeholder="Fecha" className="w-1/3 bg-transparent border-b border-gray-800 focus:border-blue-500 text-xs text-right text-gray-400 px-1 py-0.5 outline-none font-mono" /></div>
                        <input {...register(`sections.${sectionIndex}.items.${index}.subtitle`)} placeholder="Subtítulo" className="w-full bg-transparent text-xs text-blue-400 px-1 outline-none placeholder-gray-600" />
                        <Controller control={control} name={`sections.${sectionIndex}.items.${index}.tags`} render={({ field }) => ( <div className="flex items-center gap-2 bg-gray-800/50 rounded px-2 py-1 border border-transparent focus-within:border-gray-600"><Tag size={12} className="text-gray-500" /><input className="w-full bg-transparent text-xs text-gray-300 outline-none placeholder-gray-600" placeholder="Tags..." defaultValue={field.value?.join(", ")} onBlur={(e) => field.onChange(e.target.value ? e.target.value.split(',').map(s => s.trim()).filter(Boolean) : [])} /></div> )} />
-                       <Controller name={`sections.${sectionIndex}.items.${index}.description`} control={control} render={({ field }) => <RichTextarea {...field} placeholder="Descripción..." />} />
+                       {/* CORRECCIÓN: Asegurar value string */}
+                       <Controller name={`sections.${sectionIndex}.items.${index}.description`} control={control} render={({ field }) => <RichTextarea {...field} value={field.value || ''} placeholder="Descripción..." />} />
                    </>
                 )}
             </div>
