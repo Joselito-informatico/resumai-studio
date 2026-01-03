@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { Printer, Settings2, FileText, Columns, ZoomIn, ZoomOut, Maximize } from 'lucide-react';
 import { useResumeStore } from '../../store/useResumeStore';
 import { ResumeRenderer } from './ResumeRenderer';
@@ -7,7 +7,6 @@ export const PreviewPanel = () => {
   const { resumeData, updateSettings } = useResumeStore();
   const { settings } = resumeData;
   const [zoom, setZoom] = useState(0.8);
-  const containerRef = useRef<HTMLDivElement>(null); // Se mantiene por si se usa en el futuro, aunque no es crítico aquí
 
   const handlePrint = () => {
     window.print();
@@ -103,7 +102,7 @@ export const PreviewPanel = () => {
         {/* Fondo con textura sutil */}
         <div className="absolute inset-0 z-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#374151 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
 
-        {/* CONTENEDOR TRANSFORMABLE - AQUÍ ESTÁ EL CAMBIO CLAVE */}
+        {/* CONTENEDOR TRANSFORMABLE */}
         <div 
             id="print-area" 
             style={{ transform: `scale(${zoom})`, transformOrigin: 'top center', transition: 'transform 0.2s ease-out' }}
