@@ -23,54 +23,61 @@ body {
   @apply bg-gray-700 rounded;
 }
 
-/* --- ESTILOS DE IMPRESIÓN (CRÍTICO) --- */
+/* --- ESTILOS DE IMPRESIÓN (CORREGIDO) --- */
 @media print {
+  /* Configuración de la página del navegador */
   @page {
     margin: 0; 
-    size: auto;
+    size: auto; 
   }
 
   body {
     background: white;
+    /* Permitir scroll si es necesario para que el contenido fluya */
     overflow: visible !important;
     height: auto !important;
   }
 
-  /* 1. Ocultar TODO por defecto */
-  body * {
-    visibility: hidden;
-  }
+  /* IMPORTANTE: Eliminamos 'visibility: hidden' en 'body *'.
+     Confiamos en que MainLayout.tsx usa 'print:hidden' para sacar el editor del DOM.
+     Esto evita que el editor ocupe espacio "fantasma" a la izquierda.
+  */
 
-  /* 2. Resetear el contenedor del Zoom (CRÍTICO para arreglar el desplazamiento) */
+  /* Resetear el contenedor del Zoom */
   #print-area {
-    visibility: visible !important;
-    position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
-    transform: none !important; /* Anular el Zoom */
-    width: 100% !important;
+    position: absolute;
+    transform: none !important;
+    top: 0;
+    left: 0;
+    width: 100%;
+    /* Anular cualquier transformación de escala (Zoom) */
+    transform: none !important; 
     margin: 0 !important;
     padding: 0 !important;
-    display: block !important;
   }
 
-  /* 3. Hacer visible el papel y resetear su posición dentro del área */
-  #resume-paper, #resume-paper * {
-    visibility: visible !important;
-  }
-
+  /* Configuración del Papel */
   #resume-paper {
-    position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important; /* Si necesitas padding interno, manéjalo en el componente, no aquí */
+    /* Forzar ancho completo del área de impresión */
     width: 100% !important;
+    
+    /* RESTAURAR MÁRGENES: */
+    /* Usamos 12mm de padding interno para que el texto no toque los bordes */
+    padding: 12mm !important; 
+    
+    /* Eliminar sombras y bordes de la vista previa */
     box-shadow: none !important;
     border: none !important;
+    
+    /* Asegurar que el padding no rompa el ancho total */
+    box-sizing: border-box !important; 
+    
+    /* Asegurar que el fondo sea blanco */
+    background: white !important;
+    min-height: 100vh;
   }
 
-  /* 4. Asegurar impresión de colores de fondo */
+  /* Asegurar impresión de colores de fondo (tags, barras, etc.) */
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
