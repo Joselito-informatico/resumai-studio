@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-gray-950 text-gray-100 m-0 p-0 overflow-hidden;
+  font-family: Inter, system-ui, sans-serif;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-700 rounded;
+}
+
+/* --- ESTILOS DE IMPRESIÓN (CRÍTICO) --- */
+@media print {
+  @page {
+    margin: 0; 
+    size: auto; /* Deja que el CSS controle el tamaño */
+  }
+
+  body {
+    background: white;
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  /* 1. Ocultar TODO por defecto */
+  body * {
+    visibility: hidden;
+  }
+
+  /* 2. Hacer visible SOLO el papel y su contenido */
+  #resume-paper, #resume-paper * {
+    visibility: visible;
+  }
+
+  /* 3. Posicionar el papel en la esquina absoluta */
+  #resume-paper {
+    position: absolute;
+    left: 0;
+    top: 0;
+    margin: 0;
+    padding: 0; /* Quitamos padding externo, el interno se mantiene */
+    width: 100% !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  /* 4. Asegurar que los colores de fondo (ej: tags grises) se impriman */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
